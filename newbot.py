@@ -1,15 +1,17 @@
 import random as rd
+import io
 import readline
 import time
 import telebot
 from telebot import types
 
 
-def add_helper(qst):
+def add_helper(qst: str) -> str:
     """
-    Функция добавления подсказки к вопросу (в зависимости от вопроса)
-    Ввод: тело вопроса + вариантов
-    Вывод: вопрос + вариант + подсказка ввода ответов
+    Add a hint to the question depending on the question's type.
+
+    Keyword Arguments:
+    qst -- question body + options
     """
     if qst.startswith('/S'):
         return qst[3:] + "\nВведите единственный верный вариант ответа:"
@@ -19,11 +21,12 @@ def add_helper(qst):
         return qst[3:] + "\nВведите правильный ответ:"
 
 
-def dict_of_answers(fd):
+def dict_of_answers(fd: io.TextIOWrapper) -> dict:
     """
-    Функция создания словаря вопросов и ответов
-    Ввод: FileStreamIO
-    Вывод: Словарь загадок)
+    Create a dictionary of questions and answers.
+
+    Keyword Arguments:
+    fd -- opened quiz file
     """
     dd = dict()
     question_name = ""
@@ -49,16 +52,15 @@ def dict_of_answers(fd):
     return dd
 
 
-def answer_ruler(quest, pred_answ, train_answ):
+def answer_ruler(quest: str, pred_answ: str, train_answ: str) -> bool:
     """
-    Функция проверки правильности ответа (в зависимости от вопроса)
-    Ввод:
-        quest - данный вопрос
-        pred_answ - ответ на вопрос
-        train_answ - верный ответ
-    Вывод: Результат проверки (T/F)
+    Check the correctness of the answer (depending on the question).
+
+    Keyword Arguments:
+    quest -- question
+    pred_answ -- question's answer via user
+    train_answ -- the correct answer
     """
-    # print(f"{quest=}, {pred_answ=}, {train_answ=}")
     if quest.startswith('/M'):
         tmptrueres = "".join(sorted(train_answ.strip().lower().split()))
         tmpansw = "".join(sorted(pred_answ.strip().lower().split()))
@@ -67,13 +69,14 @@ def answer_ruler(quest, pred_answ, train_answ):
         return pred_answ.strip().lower() == train_answ.strip().lower()
 
 
-def file_saver(used_dict, name, res):
+def file_saver(used_dict: dict, name: str, res: int) -> io.TextIOWrapper:
     """
-    Функция сохранения результатов пользователя локально в файле
-    Ввод:
-        used_dict - словарь ответов пользователя
-        name - имя пользователя
-        res - результат пользователя
+    Save the user's results locally in a file.
+
+    Keyword Arguments:
+    user_dict -- user responses' dictionary
+    name -- user's name
+    res -- user's result
     """
     global quest_dict
     with open(f"answers_{name}.txt", "w", encoding="utf-8") as f:
@@ -110,8 +113,8 @@ bot = telebot.TeleBot(API_KEY)
 
 @bot.message_handler(content_types=['text'])
 def start(message):
+    """Start to host bot, request user's name."""
     if message.text == '/start':
-        # print(message.from_user.id)
         if new_entering_msg:
             bot.send_message(message.from_user.id, new_entering_msg)
             bot.register_next_step_handler(message, get_name)
@@ -125,6 +128,7 @@ def start(message):
 
 
 def get_name(message):
+    """Recieve user's name, send quiz hello-world, request for readiness."""
     global user_name
     user_name = message.text
     MSG = f"Всего в тесте будет {len(quest_dict)} вопросов трёх типов: \n\
@@ -137,6 +141,7 @@ def get_name(message):
 
 
 def send_fst_quest(message):
+    """Send first question, request for user's answer."""
     global tmp_questions
     msg = add_helper(tmp_questions[0])
     bot.send_message(message.from_user.id, msg)
@@ -144,6 +149,7 @@ def send_fst_quest(message):
 
 
 def request_answ(message):
+    """Send next questions and recieve users' answers cyclicaly. Finally - send user's score."""
     global tmp_questions
     global usr_res
     global answers_of_users
