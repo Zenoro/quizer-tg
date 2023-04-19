@@ -83,18 +83,15 @@ def send_quest(message):
 
 print('Hello! Welcome to tester as teacher. Be ready with Telegram bot API, questions-file')
 
-#API_KEY = input("Enter Bot API key, given by Telegram Bot Father    ").strip()
-API_KEY = '6033741551:AAFW7B3eVpEe95aBg81S0cH8t6Cy4XtjocA'
-#filedir = input("Enter name of quiz-file (it should be in programm path!)    ")
-filedir = 'MYQUEST.txt'
+API_KEY = input("Enter Bot API key, given by Telegram Bot Father    ").strip()
+filedir = input("Enter name of quiz-file (it should be in programm path!)    ")
 while 1:
     try:
         filedir = open(filedir, 'r')
         break
     except FileNotFoundError:
         filedir = input("Wrong directory. Try again.    ")
-#new_entering_msg = input("Enter custom hello-message, if it's needed.    ").strip()
-new_entering_msg=None
+new_entering_msg = input("Enter custom hello-message, if it's needed.    ").strip()
 
 quests_all = parce_file(filedir)
 quests = quests_all.copy()
@@ -235,6 +232,7 @@ def start(message):
     return
     
     if message.text == '/start':
+        # print(message.from_user.id)
         if new_entering_msg:
             bot.send_message(message.from_user.id, new_entering_msg)
             bot.register_next_step_handler(message, get_name)

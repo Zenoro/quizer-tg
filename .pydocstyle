@@ -1,0 +1,6 @@
+[pydocstyle]
+# D100 - Missing docstring in public module
+# D212 - Multi-line docstring summary should start at the first line
+# D407: Missing dashed underline after section
+# D413: Missing blank line after last section
+ignore = D100, D212, D407, D413
