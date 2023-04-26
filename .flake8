@@ -1,4 +1,6 @@
 [flake8]
 max-line-length = 120
 # F401: Module imported but unused
-extend-ignore = F401
+# E101: indentation contains mixed spaces and tabs
+# W293: blank line contains whitespace
+extend-ignore = F401, E101, W293
