@@ -14,6 +14,7 @@ class Question:
 	
 	
 def handle_s_question(text):
+    """Reading a question with one answer"""
     title = text[0][3:]
     var = []
     temp = {}
@@ -27,6 +28,7 @@ def handle_s_question(text):
     return Question('S', title, var, set(answer))
     
 def handle_m_question(text):
+    """Reading a question with multiple answers"""
     title = text[0][3:]
     var = []
     temp = {}
@@ -40,6 +42,7 @@ def handle_m_question(text):
     return Question('M', title, var, set(answer))
     
 def handle_o_question(text):
+    """Reading a question with an answer for input"""
     title = text[0][3:]
     answer = text[1][3:].strip().lower()
     return Question('O', title, None, set([answer]))
@@ -47,9 +50,10 @@ def handle_o_question(text):
 	
 def parce_file(fd):
     """
-    Функция создания словаря вопросов и ответов
-    Ввод: FileStreamIO
-    Вывод: Словарь загадок)
+    The function of reading questions and answers from a file
+    
+    Keyword Arguments:
+    fd -- opened quiz file
     """
     text = ''
     for line in fd:

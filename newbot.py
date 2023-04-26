@@ -13,7 +13,7 @@ def file_saver(id_):
     Save the user's results locally in a file.
     
     Keyword Arguments:
-    id_ - the user's key to the dictionary status
+    id_ -- the user's key to the dictionary status
     """
     global quests_all
     global status
@@ -118,7 +118,7 @@ def handle_answer(id_, quest, user_answer):
     Perform verification, save the user response. Start the next question function
     
     Keyword Arguments:
-    id_ - the user's key to the dictionary status
+    id_ -- the user's key to the dictionary status
     quest -- question
     user_answer -- question's answer via user
     """
@@ -139,8 +139,8 @@ def callback_handle_s(id_, user_ans):
     Process the callback of a button with the user's answer to a question with one answer
     
     Keyword Arguments:
-    id_ - the user's key to the dictionary status
-    user_ans - users's answer on the last question
+    id_ -- the user's key to the dictionary status
+    user_ans -- users's answer on the last question
     """
     global status 
     last_bot_message = status[id_].last_bot_message
@@ -161,8 +161,8 @@ def callback_handle_m(id_, user_ans):
     Process the callback of a button with the user's answer to a question with several answers
     
     Keyword Arguments:
-    id_ - the user's key to the dictionary status
-    user_ans - users's answer on the last question
+    id_ -- the user's key to the dictionary status
+    user_ans -- users's answer on the last question
     """
     global status 
     last_bot_message = status[id_].last_bot_message
