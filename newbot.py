@@ -13,10 +13,7 @@ def file_saver(id_):
     Save the user's results locally in a file.
     
     Keyword Arguments:
-    user_answers -- user responses' dictionary
-    true_answers -- valid answers to questions
-    name -- user's name
-    res -- user's score
+    id_ - the user's key to the dictionary status
     """
     global quests_all
     global status
@@ -121,6 +118,7 @@ def handle_answer(id_, quest, user_answer):
     Perform verification, save the user response. Start the next question function
     
     Keyword Arguments:
+    id_ - the user's key to the dictionary status
     quest -- question
     user_answer -- question's answer via user
     """
@@ -137,7 +135,13 @@ def handle_answer(id_, quest, user_answer):
     send_quest(status[id_].last_user_message)
     
 def callback_handle_s(id_, user_ans):
-    """TODO"""
+    """
+    Process the callback of a button with the user's answer to a question with one answer
+    
+    Keyword Arguments:
+    id_ - the user's key to the dictionary status
+    user_ans - users's answer on the last question
+    """
     global status 
     last_bot_message = status[id_].last_bot_message
     last_quest = status[id_].last_quest
@@ -153,7 +157,13 @@ def callback_handle_s(id_, user_ans):
     
     
 def callback_handle_m(id_, user_ans):
-    """TODO"""
+    """
+    Process the callback of a button with the user's answer to a question with several answers
+    
+    Keyword Arguments:
+    id_ - the user's key to the dictionary status
+    user_ans - users's answer on the last question
+    """
     global status 
     last_bot_message = status[id_].last_bot_message
     last_markup = status[id_].last_markup
@@ -198,7 +208,7 @@ def callback_handle_m(id_, user_ans):
   
     
 def handle_o(message):
-    """TODO"""
+    """Сheck the user's message for the correctness of the answer to the question"""
     global status 
     id_ = message.from_user.id
     handle_answer(id_, status[id_].last_quest, message.text)
@@ -206,7 +216,7 @@ def handle_o(message):
     
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call): 
-    """TODO"""
+    """The callback function for the user to acquire buttons under the questions"""
     if call.data:
         global status
         last_quest = status[call.from_user.id].last_quest
@@ -246,7 +256,7 @@ def start(message):
 
 
 def get_name(message):
-    """TODO"""
+    """User name registration"""
     global status
     status[message.from_user.id].name = message.text
     MSG = f"Всего в тесте будет {len(quests)} вопросов трёх типов: \n\
@@ -258,7 +268,7 @@ def get_name(message):
     bot.register_next_step_handler(message, send_quest)
     
 def get_result(message):
-    """TODO"""
+    """Completing the test, saving the results"""
     global status
     
     bot.send_message(message.from_user.id, f'Ваш результат: {status[message.from_user.id].res}')
