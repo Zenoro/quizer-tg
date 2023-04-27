@@ -4,4 +4,4 @@
 # D407: Missing dashed underline after section
 # D413: Missing blank line after last section
 # W293: blank line contains whitespace
-ignore = D100, D212, D407, D413, W293
+ignore = D100, D212, D407, D413, W293, F405
