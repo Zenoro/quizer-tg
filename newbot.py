@@ -81,17 +81,23 @@ def send_quest(message):
         return ask_question_o(message, quest)
 
 
-print('Hello! Welcome to tester as teacher. Be ready with Telegram bot API, questions-file')
+if __name__ == '__main__':
+    print('Hello! Welcome to tester as teacher. Be ready with Telegram bot API, questions-file')
 
-API_KEY = input("Enter Bot API key, given by Telegram Bot Father    ").strip()
-filedir = input("Enter name of quiz-file (it should be in programm path!)    ")
-while 1:
-    try:
-        filedir = open(filedir, 'r')
-        break
-    except FileNotFoundError:
-        filedir = input("Wrong directory. Try again.    ")
-new_entering_msg = input("Enter custom hello-message, if it's needed.    ").strip()
+    API_KEY = input("Enter Bot API key, given by Telegram Bot Father    ").strip()
+    filedir = input("Enter name of quiz-file (it should be in programm path!)    ")
+    while 1:
+        try:
+            filedir = open(filedir, 'r')
+            break
+        except FileNotFoundError:
+            filedir = input("Wrong directory. Try again.    ")
+    new_entering_msg = input("Enter custom hello-message, if it's needed.    ").strip()
+else:
+    filedir = 'MYQUEST.txt'
+    filedir = open(filedir, 'r')
+    API_KEY = '6033741551:AAFW7B3eVpEe95aBg81S0cH8t6Cy4XtjocA'
+    new_entering_msg = ''
 
 quests_all = parce_file(filedir)
 quests = quests_all.copy()
@@ -100,7 +106,6 @@ rd.shuffle(quests)
 status = dict()
 
 
-print('>>BOT STARTED TO WORK<<')
 bot = telebot.TeleBot(API_KEY)
 
 
@@ -157,7 +162,7 @@ def callback_handle_s(id_, user_ans):
                                   reply_markup='')
 
     bot.edit_message_text(chat_id=last_bot_message.chat.id,
-                          essage_id=last_bot_message.id,
+                          message_id=last_bot_message.id,
                           text=last_bot_message.text + f'\n\nВаш ответ: {user_ans}')
     handle_answer(id_, last_quest, [user_ans])
 
@@ -277,4 +282,6 @@ def get_result(message):
     file_saver(message.from_user.id)
 
 
-bot.polling(none_stop=True, interval=0)
+if __name__ == '__main__':
+    print('>>BOT STARTED TO WORK<<')
+    bot.polling(none_stop=True, interval=0)
