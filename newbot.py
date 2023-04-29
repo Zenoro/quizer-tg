@@ -32,15 +32,21 @@ def ask_question_sm(message, qst):
     global status
     id_ = message.from_user.id
 
+    letters = 'abcdefghijklmnopqrstuvwxyz'
+    
+    msg = qst.title + '\n'
+    for num, i in enumerate(qst.var):
+        msg += letters[num] + ') ' + i + '\n'
+
     if qst.type_of_q == 'S':
-        msg = qst.title + "\nНажмите верный ответ"
+        msg += "\nНажмите верный ответ"
     else:
-        msg = qst.title + "\nВыберите верные ответы"
+        msg += "\nВыберите верные ответы"
     markup = types.InlineKeyboardMarkup()
     mark = []
 
-    for i in qst.var:
-        button = types.InlineKeyboardButton(i, callback_data=i)
+    for num, i in enumerate(qst.var):
+        button = types.InlineKeyboardButton(letters[num], callback_data=i)
         mark.append(button)
     if qst.type_of_q == 'M':
         mark.append(types.InlineKeyboardButton('Закончить выбор', callback_data='@'))
@@ -161,9 +167,14 @@ def callback_handle_s(id_, user_ans):
                                   message_id=last_bot_message.id,
                                   reply_markup='')
 
+    text = last_bot_message.text
+    split = text.split('\n')
+    text = ''
+    for i in split[:-1]:
+        text += i+'\n'
     bot.edit_message_text(chat_id=last_bot_message.chat.id,
                           message_id=last_bot_message.id,
-                          text=last_bot_message.text + f'\n\nВаш ответ: {user_ans}')
+                          text=text + f'Ваш ответ: {user_ans}')
     handle_answer(id_, last_quest, [user_ans])
 
 
@@ -200,8 +211,8 @@ def callback_handle_m(id_, user_ans):
     rows = new_text.split('\n')
     new_text = ''
     for i in rows[0:-1]:
-        new_text += i
-    new_text += '\n\nВы выбрали: '
+        new_text += i + '\n'
+    new_text += 'Вы выбрали: '
     if user_ans in ans:
         ans.remove(user_ans)
     else:
