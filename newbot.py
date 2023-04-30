@@ -12,8 +12,7 @@ def file_saver(id_):
     """
     Save the user's results locally in a file.
     
-    Keyword Arguments:
-    id_ -- the user's key to the dictionary status
+    :param id_: The user's key to the dictionary status
     """
     global quests_all
     global status
@@ -93,11 +92,7 @@ if __name__ == '__main__':
         except FileNotFoundError:
             filedir = input("Wrong directory. Try again.    ")
     new_entering_msg = input("Enter custom hello-message, if it's needed.    ").strip()
-else:
-    filedir = 'MYQUEST.txt'
-    filedir = open(filedir, 'r')
-    API_KEY = '6033741551:AAFW7B3eVpEe95aBg81S0cH8t6Cy4XtjocA'
-    new_entering_msg = ''
+
 
 quests_all = parce_file(filedir)
 quests = quests_all.copy()
@@ -109,13 +104,12 @@ status = dict()
 bot = telebot.TeleBot(API_KEY)
 
 
-def check_answer(quest, user_answer):
+def check_answer(quest:str, user_answer:str) -> set:
     """
     Check the correctness of the answer (depending on the question).
     
-    Keyword Arguments:
-    quest -- question
-    user_answer -- question's answer via user
+    :param quest: Question string
+    :param user_answer: Question's answer via user
     """
     if quest.type_of_q in {'S', 'M'}:
         # print(set(user_answer), quest.answer)
@@ -123,14 +117,13 @@ def check_answer(quest, user_answer):
     return set([user_answer.strip().lower()]) == quest.answer
 
 
-def handle_answer(id_, quest, user_answer):
+def handle_answer(id_, quest:str, user_answer:str):
     """
     Perform verification, save the user response. Start the next question function
     
-    Keyword Arguments:
-    id_ -- the user's key to the dictionary status
-    quest -- question
-    user_answer -- question's answer via user
+    :param id_: The user's key to the dictionary status
+    :param quest: Question string
+    :param user_answer: Question's answer via user
     """
     global status
     # print(check_answer(quest,user_answer))
@@ -149,9 +142,8 @@ def callback_handle_s(id_, user_ans):
     """
     Process the callback of a button with the user's answer to a question with one answer
     
-    Keyword Arguments:
-    id_ -- the user's key to the dictionary status
-    user_ans -- users's answer on the last question
+    :param id_: The user's key to the dictionary status
+    :param user_ans: Users's answer on the last question
     """
     global status
     last_bot_message = status[id_].last_bot_message
@@ -171,9 +163,8 @@ def callback_handle_m(id_, user_ans):
     """
     Process the callback of a button with the user's answer to a question with several answers
     
-    Keyword Arguments:
-    id_ -- the user's key to the dictionary status
-    user_ans -- users's answer on the last question
+    :param id_: The user's key to the dictionary status
+    :param user_ans:  Users's answer on the last question
     """
     global status
     last_bot_message = status[id_].last_bot_message
