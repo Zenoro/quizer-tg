@@ -1,171 +1,287 @@
 import random as rd
-import io
 import readline
 import time
 import telebot
 from telebot import types
 
-
-def add_helper(qst: str) -> str:
-    """
-    Add a hint to the question depending on the question's type.
-
-    Keyword Arguments:
-    qst -- question body + options
-    """
-    if qst.startswith('/S'):
-        return qst[3:] + "\nВведите единственный верный вариант ответа:"
-    elif qst.startswith('/M'):
-        return qst[3:] + "\nВведите все верные варианты ответов через пробел:"
-    elif qst.startswith('/O'):
-        return qst[3:] + "\nВведите правильный ответ:"
+from file_parser import parce_file
+from user_status import UserStatus
 
 
-def dict_of_answers(fd: io.TextIOWrapper) -> dict:
-    """
-    Create a dictionary of questions and answers.
-
-    Keyword Arguments:
-    fd -- opened quiz file
-    """
-    dd = dict()
-    question_name = ""
-    variants = ""
-    ans = ""
-    for line in fd:
-        if line.startswith('/S') or line.startswith('/O') or\
-                line.startswith('/M') or line.startswith("//"):    # name of question
-            question_name += line.lstrip()
-        elif not (line.startswith('/Q') or line == '\n'):   # variants
-            variants += line.lstrip()
-        elif line.startswith('/Q'):
-            ans = line[2:].strip()
-        else:
-            # if not variants:
-            #     dd[question_name] = ans
-            # else:
-            dd[question_name+variants.rstrip()] = ans
-            question_name = ""
-            variants = ""
-            ans = ""
-            continue
-    return dd
-
-
-def answer_ruler(quest: str, pred_answ: str, train_answ: str) -> bool:
-    """
-    Check the correctness of the answer (depending on the question).
-
-    Keyword Arguments:
-    quest -- question
-    pred_answ -- question's answer via user
-    train_answ -- the correct answer
-    """
-    if quest.startswith('/M'):
-        tmptrueres = "".join(sorted(train_answ.strip().lower().split()))
-        tmpansw = "".join(sorted(pred_answ.strip().lower().split()))
-        return tmpansw == tmptrueres
-    elif quest.startswith('/S') or quest.startswith('/O'):
-        return pred_answ.strip().lower() == train_answ.strip().lower()
-
-
-def file_saver(used_dict: dict, name: str, res: int) -> io.TextIOWrapper:
+def file_saver(id_):
     """
     Save the user's results locally in a file.
-
+    
     Keyword Arguments:
-    user_dict -- user responses' dictionary
-    name -- user's name
-    res -- user's result
+    id_ -- the user's key to the dictionary status
     """
-    global quest_dict
-    with open(f"answers_{name}.txt", "w", encoding="utf-8") as f:
-        print(f'{name}\n{time.ctime()}\nОбщий результат: {res} ({res / len(quest_dict)}%)\n', file=f)
-        for num, quest in enumerate(quest_dict):
+    global quests_all
+    global status
+    with open(f"answers_{status[id_].name}.txt", "w", encoding="utf-8") as f:
+        res = status[id_].res
+        print(f'{status[id_].name}\n{time.ctime()}\nОбщий результат: {res} {round(res*100 / len(quests_all),2)}%\n',
+              file=f)
+        for num, quest in enumerate(quests_all):
             print(f"Вопрос {num+1}", file=f)
-            print(f"Ответ пользователя: {used_dict[quest]}", file=f)
-            print(f"Правильный ответ: {quest_dict[quest]}", file=f)
+            print(f"Ответ пользователя: {status[id_].user_ans[quest.title]}", file=f)
+            print(f"Правильный ответ: {status[id_].true_ans[quest.title]}", file=f)
 
 
-print('Hello! Welcome to tester as teacher. Be ready with Telegram bot API, questions-file')
+def ask_question_sm(message, qst):
+    """Send a question to the user, indicating the buttons for the answer under the message"""
+    global status
+    id_ = message.from_user.id
 
-API_KEY = input("Enter Bot API key, given by Telegram Bot Father    ").strip()
-filedir = input("Enter name of quiz-file (it should be in programm path!)    ")
-while 1:
-    try:
-        filedir = open(filedir, 'r')
-        break
-    except FileNotFoundError:
-        filedir = input("Wrong directory. Try again.    ")
-new_entering_msg = input("Enter custom hello-message, if it's needed.    ").strip()
+    if qst.type_of_q == 'S':
+        msg = qst.title + "\nНажмите верный ответ"
+    else:
+        msg = qst.title + "\nВыберите верные ответы"
+    markup = types.InlineKeyboardMarkup()
+    mark = []
 
-quest_dict = dict_of_answers(filedir)
-tmp_questions = [i for i in quest_dict.keys()]
-rd.shuffle(tmp_questions)
+    for i in qst.var:
+        button = types.InlineKeyboardButton(i, callback_data=i)
+        mark.append(button)
+    if qst.type_of_q == 'M':
+        mark.append(types.InlineKeyboardButton('Закончить выбор', callback_data='@'))
+    markup.add(*mark)
 
-answers_of_users = dict()
-usr_res = 0
-user_name = ''
+    status[id_].last_markup = markup
+    status[id_].last_quest = qst
+    status[id_].last_bot_message = bot.send_message(message.from_user.id, msg, reply_markup=markup)
+    status[id_].last_user_message = message
 
-print('>>BOT STARTED TO WORK<<')
+
+def ask_question_o(message, qst):
+    """Send a question to the user that requires sending a message from the user"""
+    global status
+    id_ = message.from_user.id
+
+    status[id_].last_quest = qst
+    status[id_].last_user_message = message
+
+    msg = qst.title + "\nНапечатайте верный ответ"
+    bot.send_message(message.from_user.id, msg)
+    bot.register_next_step_handler(message, handle_o)
+
+
+def send_quest(message):
+    """Select the next question to send to the user and calling the sending functions"""
+    global status
+    id_ = message.from_user.id
+
+    if not(len(status[id_].quests)):
+        get_result(message)
+        return
+    quest = status[id_].quests[0]
+    del status[id_].quests[0]
+    if quest.type_of_q in ('S', 'M'):
+        return ask_question_sm(message, quest)
+    if quest.type_of_q == 'O':
+        return ask_question_o(message, quest)
+
+
+if __name__ == '__main__':
+    print('Hello! Welcome to tester as teacher. Be ready with Telegram bot API, questions-file')
+
+    API_KEY = input("Enter Bot API key, given by Telegram Bot Father    ").strip()
+    filedir = input("Enter name of quiz-file (it should be in programm path!)    ")
+    while 1:
+        try:
+            filedir = open(filedir, 'r')
+            break
+        except FileNotFoundError:
+            filedir = input("Wrong directory. Try again.    ")
+    new_entering_msg = input("Enter custom hello-message, if it's needed.    ").strip()
+else:
+    filedir = 'MYQUEST.txt'
+    filedir = open(filedir, 'r')
+    API_KEY = '6033741551:AAFW7B3eVpEe95aBg81S0cH8t6Cy4XtjocA'
+    new_entering_msg = ''
+
+quests_all = parce_file(filedir)
+quests = quests_all.copy()
+rd.shuffle(quests)
+
+status = dict()
+
+
 bot = telebot.TeleBot(API_KEY)
+
+
+def check_answer(quest, user_answer):
+    """
+    Check the correctness of the answer (depending on the question).
+    
+    Keyword Arguments:
+    quest -- question
+    user_answer -- question's answer via user
+    """
+    if quest.type_of_q in {'S', 'M'}:
+        # print(set(user_answer), quest.answer)
+        return set(user_answer) == quest.answer
+    return set([user_answer.strip().lower()]) == quest.answer
+
+
+def handle_answer(id_, quest, user_answer):
+    """
+    Perform verification, save the user response. Start the next question function
+    
+    Keyword Arguments:
+    id_ -- the user's key to the dictionary status
+    quest -- question
+    user_answer -- question's answer via user
+    """
+    global status
+    # print(check_answer(quest,user_answer))
+    status[id_].res += check_answer(quest, user_answer)
+
+    if status[id_].last_quest.type_of_q in {'S', 'M'}:
+        status[id_].user_ans[quest.title] = set(user_answer)
+    else:
+        status[id_].user_ans[quest.title] = set([user_answer.strip().lower()])
+    status[id_].true_ans[quest.title] = status[id_].last_quest.answer
+
+    send_quest(status[id_].last_user_message)
+
+
+def callback_handle_s(id_, user_ans):
+    """
+    Process the callback of a button with the user's answer to a question with one answer
+    
+    Keyword Arguments:
+    id_ -- the user's key to the dictionary status
+    user_ans -- users's answer on the last question
+    """
+    global status
+    last_bot_message = status[id_].last_bot_message
+    last_quest = status[id_].last_quest
+
+    bot.edit_message_reply_markup(chat_id=last_bot_message.chat.id,
+                                  message_id=last_bot_message.id,
+                                  reply_markup='')
+
+    bot.edit_message_text(chat_id=last_bot_message.chat.id,
+                          message_id=last_bot_message.id,
+                          text=last_bot_message.text + f'\n\nВаш ответ: {user_ans}')
+    handle_answer(id_, last_quest, [user_ans])
+
+
+def callback_handle_m(id_, user_ans):
+    """
+    Process the callback of a button with the user's answer to a question with several answers
+    
+    Keyword Arguments:
+    id_ -- the user's key to the dictionary status
+    user_ans -- users's answer on the last question
+    """
+    global status
+    last_bot_message = status[id_].last_bot_message
+    last_markup = status[id_].last_markup
+    last_quest = status[id_].last_quest
+
+    row = last_bot_message.text.split('\n')[-1]
+    if row.startswith('Вы выбрали:'):
+        ans = row.split(' | ')
+        ans[0] = ans[0][ans[0].index(':')+2:]
+        if ans[0] == '':
+            ans = []
+    else:
+        ans = []
+
+    if user_ans == "@":
+        bot.edit_message_reply_markup(chat_id=last_bot_message.chat.id,
+                                      message_id=last_bot_message.id,
+                                      reply_markup='')
+        handle_answer(id_, last_quest, ans)
+        return
+
+    new_text = last_bot_message.text
+    rows = new_text.split('\n')
+    new_text = ''
+    for i in rows[0:-1]:
+        new_text += i
+    new_text += '\n\nВы выбрали: '
+    if user_ans in ans:
+        ans.remove(user_ans)
+    else:
+        ans.append(user_ans)
+    if len(ans):
+        new_text += ans[0]
+        for i in ans[1:]:
+            new_text += ' | '+i
+
+    status[id_].last_bot_message = bot.edit_message_text(chat_id=last_bot_message.chat.id,
+                                                         message_id=last_bot_message.id,
+                                                         text=new_text,
+                                                         reply_markup=last_markup)
+
+
+def handle_o(message):
+    """Сheck the user's message for the correctness of the answer to the question"""
+    global status
+    id_ = message.from_user.id
+    handle_answer(id_, status[id_].last_quest, message.text)
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_inline(call):
+    """The callback function for the user to acquire buttons under the questions"""
+    if call.data:
+        global status
+        last_quest = status[call.from_user.id].last_quest
+        id_ = call.from_user.id
+        if last_quest.type_of_q == 'S':
+            callback_handle_s(id_, call.data)
+        elif last_quest.type_of_q == 'M':
+            callback_handle_m(id_, call.data)
 
 
 @bot.message_handler(content_types=['text'])
 def start(message):
     """Start to host bot, request user's name."""
+    global status
+    print(message.from_user.id)
+    quests = quests_all.copy()
+    rd.shuffle(quests)
+    status[message.from_user.id] = UserStatus(name='', res=0, user_ans=dict(), true_ans=dict(), last_bot_message=None,
+                                              last_user_message=None, last_markup=None, quests=quests, last_quest=None)
+
     if message.text == '/start':
+        # print(message.from_user.id)
         if new_entering_msg:
             bot.send_message(message.from_user.id, new_entering_msg)
             bot.register_next_step_handler(message, get_name)
         else:
-            bot.send_message(message.from_user.id, "Приветствуем!\
+            bot.send_message(message.from_user.id, """Приветствуем!\
                                                     Представьтесь системе:\n\
-                                                    Напишите свои фамилию и имя перед началом тестирования!")
+                                                    Напишите свои фамилию и имя перед началом тестирования!""")
             bot.register_next_step_handler(message, get_name)
     else:
         bot.send_message(message.from_user.id, 'Напиши /start')
 
 
 def get_name(message):
-    """Recieve user's name, send quiz hello-world, request for readiness."""
-    global user_name
-    user_name = message.text
-    MSG = f"Всего в тесте будет {len(quest_dict)} вопросов трёх типов: \n\
+    """User name registration"""
+    global status
+    status[message.from_user.id].name = message.text
+    MSG = f"Всего в тесте будет {len(quests)} вопросов трёх типов: \n\
             \tс множественным выбором, \n\
             \tс определенным ответом, \n\
             \tвыбором одного правильного ответа. \n\
             Напишите ответ для начала теста."
     bot.send_message(message.from_user.id, MSG)
-    bot.register_next_step_handler(message, send_fst_quest)
+    bot.register_next_step_handler(message, send_quest)
 
 
-def send_fst_quest(message):
-    """Send first question, request for user's answer."""
-    global tmp_questions
-    msg = add_helper(tmp_questions[0])
-    bot.send_message(message.from_user.id, msg)
-    bot.register_next_step_handler(message, request_answ)
+def get_result(message):
+    """Completing the test, saving the results"""
+    global status
+
+    bot.send_message(message.from_user.id, f'Ваш результат: {status[message.from_user.id].res}')
+    file_saver(message.from_user.id)
 
 
-def request_answ(message):
-    """Send next questions and recieve users' answers cyclicaly. Finally - send user's score."""
-    global tmp_questions
-    global usr_res
-    global answers_of_users
-    usr_ans = message.text
-    answers_of_users[tmp_questions[0]] = message.text
-    usr_res += answer_ruler(tmp_questions[0], usr_ans, quest_dict[tmp_questions[0]])
-    tmp_questions.pop(0)
-    if tmp_questions:
-        msg = add_helper(tmp_questions[0])
-        bot.send_message(message.from_user.id, msg)
-        bot.register_next_step_handler(message, request_answ)
-    else:
-        bot.send_message(message.from_user.id, f'Ваш результат: {usr_res}')
-        file_saver(answers_of_users, user_name, usr_res)
-        tmp_questions = [i for i in quest_dict.keys()]
-        rd.shuffle(tmp_questions)
-
-
-bot.polling(none_stop=True, interval=0)
+if __name__ == '__main__':
+    print('>>BOT STARTED TO WORK<<')
+    bot.polling(none_stop=True, interval=0)
