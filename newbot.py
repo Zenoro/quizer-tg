@@ -3,9 +3,16 @@ import readline
 import time
 import telebot
 from telebot import types
+import os
+import gettext
 
 from file_parser import parce_file
 from user_status import UserStatus
+
+
+translation = gettext.translation('newbot', 'i10n', ['eng'], fallback=True)
+_ = translation.gettext
+
 
 def file_saver(id_):
     """
@@ -17,37 +24,48 @@ def file_saver(id_):
     global status
     with open(f"answers_{status[id_].name}.txt", "w", encoding="utf-8") as f:
         res = status[id_].res
-        print(f'{status[id_].name}\n{time.ctime()}\nОбщий результат: {res} {round(res*100 / len(quests_all),2)}%\n',
-              file=f)
+        print(status[id_].name, file=f)
+        print(time.ctime(), file=f)
+        print(_("Общий результат:"), res,' ', round(res*100 / len(quests_all),2), '%', sep='', file=f)
         for num, quest in enumerate(quests_all):
-            print(f"Вопрос {num+1}", file=f)
-            print(f"Ответ пользователя: {status[id_].user_ans[quest.title]}", file=f)
-            print(f"Правильный ответ: {status[id_].true_ans[quest.title]}", file=f)
+            print(_("Вопрос {}".format(num+1)), file=f)
+            print(_("Ответ пользователя: {}".format(status[id_].user_ans[quest.title])), file=f)
+            print(_("Правильный ответ: {}".format(status[id_].true_ans[quest.title])), file=f)
 
 
 def bot_starter():
     """Start the bot"""
-    print('Hello! Welcome to tester as teacher. Be ready with Telegram bot API, questions-file')
+    print(_('Приветствуем администратора! Будьте готовы ввести Телеграм-бот ключ, имя файла вопросов'))
 
-    API_KEY = input("Enter Bot API key, given by Telegram Bot Father    ").strip()
-    filedir = input("Enter name of quiz-file (it should be in programm path!)    ")
+    API_KEY = input(_("Введите ключ API бота, предоставленный Telegram Bot Father    ")).strip()
+    filedir = input(_("Введите имя файла теста (файл должен находиться в той же папке, где и программа!) или его абсолютный путь    "))
     while 1:
         try:
             filedir = open(filedir, 'r')
             break
         except FileNotFoundError:
-            filedir = input("Wrong directory. Try again.    ")
-    new_entering_msg = input("Enter custom hello-message, if it's needed.    ").strip()
+            filedir = input(_("Неправильный путь или имя файла. Пробуйте снова.    "))
+    save_flag = input(_("Нужно ли сохранять результаты участников локально? [n]    "))
+    os.makedirs('local_answers')
+    os.chdir('local_answers')
+    if save_flag and save_flag.strip().lower() not in 'n no нет н т'.split():
+        try:
+            count_flag = int(input(_('Введите максимальное количество участников для сохранения [5]    ')))
+        except:
+            count_flag = 5
+    else:
+        count_flag = 0
+    new_entering_msg = input(_("Введите ваше приветственное сообщение (если это необходимо).    ")).strip()
     bot = telebot.TeleBot(API_KEY)
 
     quests_all = parce_file(filedir)
     quests = quests_all.copy()
     rd.shuffle(quests)
-    return bot, quests, quests_all, new_entering_msg
+    return bot, quests, quests_all, new_entering_msg, count_flag
 
 if __name__ == '__main__':
     status = dict()
-    bot, quests, quests_all, new_entering_msg = bot_starter()
+    bot, quests, quests_all, new_entering_msg, count_flag = bot_starter()
 
 
     def ask_question_sm(message, qst):
@@ -62,9 +80,9 @@ if __name__ == '__main__':
             msg += letters[num] + ') ' + i + '\n'
 
         if qst.type_of_q == 'S':
-            msg += "\nНажмите верный ответ"
+            msg += "\n" +_("Нажмите верный ответ")
         else:
-            msg += "\nВыберите верные ответы"
+            msg += "\n"+_("Выберите верные ответы")
         markup = types.InlineKeyboardMarkup()
         mark = []
 
@@ -72,7 +90,7 @@ if __name__ == '__main__':
             button = types.InlineKeyboardButton(letters[num], callback_data=i)
             mark.append(button)
         if qst.type_of_q == 'M':
-            mark.append(types.InlineKeyboardButton('Закончить выбор', callback_data='@'))
+            mark.append(types.InlineKeyboardButton(_('Закончить выбор'), callback_data='@'))
         markup.add(*mark)
 
         status[id_].last_markup = markup
@@ -89,7 +107,7 @@ if __name__ == '__main__':
         status[id_].last_quest = qst
         status[id_].last_user_message = message
 
-        msg = qst.title + "\nНапечатайте верный ответ"
+        msg = qst.title + "\n"+_("Напечатайте верный ответ")
         bot.send_message(message.from_user.id, msg)
         bot.register_next_step_handler(message, handle_o)
 
@@ -166,7 +184,7 @@ if __name__ == '__main__':
             text += i+'\n'
         bot.edit_message_text(chat_id=last_bot_message.chat.id,
                             message_id=last_bot_message.id,
-                            text=text + f'Ваш ответ: {user_ans}')
+                            text=text + _('Ваш ответ: {}'.format(user_ans)))
         handle_answer(id_, last_quest, [user_ans])
 
 
@@ -183,7 +201,7 @@ if __name__ == '__main__':
         last_quest = status[id_].last_quest
 
         row = last_bot_message.text.split('\n')[-1]
-        if row.startswith('Вы выбрали:'):
+        if row.startswith(_('Вы выбрали:')):
             ans = row.split(' | ')
             ans[0] = ans[0][ans[0].index(':')+2:]
             if ans[0] == '':
@@ -203,7 +221,7 @@ if __name__ == '__main__':
         new_text = ''
         for i in rows[0:-1]:
             new_text += i + '\n'
-        new_text += 'Вы выбрали: '
+        new_text += _('Вы выбрали:') + ' '
         if user_ans in ans:
             ans.remove(user_ans)
         else:
@@ -243,24 +261,21 @@ if __name__ == '__main__':
     def start(message):
         """Start to host bot, request user's name."""
         global status
-        print(message.from_user.id, 'connected')
         quests = quests_all.copy()
         rd.shuffle(quests)
         status[message.from_user.id] = UserStatus(name='', res=0, user_ans=dict(), true_ans=dict(), last_bot_message=None,
                                                 last_user_message=None, last_markup=None, quests=quests, last_quest=None)
 
         if message.text == '/start':
-            # print(message.from_user.id)
+            print(message.from_user.id, _('подключился'))
             if new_entering_msg:
                 bot.send_message(message.from_user.id, new_entering_msg)
-                bot.register_next_step_handler(message, get_name)
             else:
-                bot.send_message(message.from_user.id, """Приветствуем!\
-                                                        Представьтесь системе:\n\
-                                                        Напишите свои фамилию и имя перед началом тестирования!""")
-                bot.register_next_step_handler(message, get_name)
+                bot.send_message(message.from_user.id, _("Приветствуем!"))
+            bot.send_message(message.from_user.id, _("Напишите свои фамилию и имя перед началом тестирования!"))
+            bot.register_next_step_handler(message, get_name)
         else:
-            bot.send_message(message.from_user.id, 'Напиши /start')
+            bot.send_message(message.from_user.id, _('Напиши /start'))
 
 
     def get_name(message):
@@ -268,11 +283,11 @@ if __name__ == '__main__':
         global status
         print(message.from_user.id, 'connected as', message.text)
         status[message.from_user.id].name = message.text
-        MSG = f"Всего в тесте будет {len(quests)} вопросов трёх типов: \n\
-                \tс множественным выбором, \n\
-                \tс определенным ответом, \n\
-                \tвыбором одного правильного ответа. \n\
-                Напишите ответ для начала теста."
+        MSG = _("Всего в тесте будет {} вопросов трёх типов:".format(len(quests))) + "\n\t"\
+            + _("с множественным выбором,") + "\n\t"\
+            + _("с определенным ответом,") + "\n\t"\
+            + _("с выбором одного правильного ответа.") + "\n"\
+            + _("Напишите ответ для начала теста.")
         bot.send_message(message.from_user.id, MSG)
         bot.register_next_step_handler(message, send_quest)
 
@@ -280,10 +295,12 @@ if __name__ == '__main__':
     def get_result(message):
         """Completing the test, saving the results"""
         global status
+        global count_flag
+        bot.send_message(message.from_user.id, _('Ваш результат: {}'.format(status[message.from_user.id].res)))
+        if count_flag:
+            file_saver(message.from_user.id)
+            count_flag -= 1
 
-        bot.send_message(message.from_user.id, f'Ваш результат: {status[message.from_user.id].res}')
-        file_saver(message.from_user.id)
 
-
-    print('>>BOT STARTED TO WORK<<')
+    print('>>', _('БОТ НАЧАЛ СВОЮ РАБОТУ'), '<<', sep='')
     bot.polling(none_stop=True, interval=0)
