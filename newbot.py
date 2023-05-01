@@ -10,7 +10,7 @@ from file_parser import parce_file
 from user_status import UserStatus
 
 
-translation = gettext.translation('newbot', 'i10n', ['eng'], fallback=True)
+translation = gettext.translation('newbot', 'l10n', ['eng'], fallback=True)
 _ = translation.gettext
 
 
@@ -26,7 +26,7 @@ def file_saver(id_):
         res = status[id_].res
         print(status[id_].name, file=f)
         print(time.ctime(), file=f)
-        print(_("Общий результат:"), res,' ', round(res*100 / len(quests_all),2), '%', sep='', file=f)
+        print(_("Общий результат:"), res, ' ', round(res*100 / len(quests_all), 2), '%', sep='', file=f)
         for num, quest in enumerate(quests_all):
             print(_("Вопрос {}".format(num+1)), file=f)
             print(_("Ответ пользователя: {}".format(status[id_].user_ans[quest.title])), file=f)
@@ -38,7 +38,8 @@ def bot_starter():
     print(_('Приветствуем администратора! Будьте готовы ввести Телеграм-бот ключ, имя файла вопросов'))
 
     API_KEY = input(_("Введите ключ API бота, предоставленный Telegram Bot Father    ")).strip()
-    filedir = input(_("Введите имя файла теста (файл должен находиться в той же папке, где и программа!) или его абсолютный путь    "))
+    filedir = input(_("Введите имя файла теста (файл должен находиться в той же папке, где и программа!)\
+                       или его абсолютный путь    "))
     while 1:
         try:
             filedir = open(filedir, 'r')
@@ -51,7 +52,7 @@ def bot_starter():
     if save_flag and save_flag.strip().lower() not in 'n no нет н т'.split():
         try:
             count_flag = int(input(_('Введите максимальное количество участников для сохранения [5]    ')))
-        except:
+        except ValueError:
             count_flag = 5
     else:
         count_flag = 0
@@ -63,10 +64,10 @@ def bot_starter():
     rd.shuffle(quests)
     return bot, quests, quests_all, new_entering_msg, count_flag
 
+
 if __name__ == '__main__':
     status = dict()
     bot, quests, quests_all, new_entering_msg, count_flag = bot_starter()
-
 
     def ask_question_sm(message, qst):
         """Send a question to the user, indicating the buttons for the answer under the message"""
@@ -80,9 +81,9 @@ if __name__ == '__main__':
             msg += letters[num] + ') ' + i + '\n'
 
         if qst.type_of_q == 'S':
-            msg += "\n" +_("Нажмите верный ответ")
+            msg += "\n" + _("Нажмите верный ответ")
         else:
-            msg += "\n"+_("Выберите верные ответы")
+            msg += "\n" + _("Выберите верные ответы")
         markup = types.InlineKeyboardMarkup()
         mark = []
 
@@ -98,7 +99,6 @@ if __name__ == '__main__':
         status[id_].last_bot_message = bot.send_message(message.from_user.id, msg, reply_markup=markup)
         status[id_].last_user_message = message
 
-
     def ask_question_o(message, qst):
         """Send a question to the user that requires sending a message from the user"""
         global status
@@ -111,13 +111,12 @@ if __name__ == '__main__':
         bot.send_message(message.from_user.id, msg)
         bot.register_next_step_handler(message, handle_o)
 
-
     def send_quest(message):
         """Select the next question to send to the user and calling the sending functions"""
         global status
         id_ = message.from_user.id
 
-        if not(len(status[id_].quests)):
+        if not len(status[id_].quests):
             get_result(message)
             return
         quest = status[id_].quests[0]
@@ -127,8 +126,7 @@ if __name__ == '__main__':
         if quest.type_of_q == 'O':
             return ask_question_o(message, quest)
 
-
-    def check_answer(quest:str, user_answer:str) -> set:
+    def check_answer(quest: str, user_answer: str) -> set:
         """
         Check the correctness of the answer (depending on the question).
         
@@ -140,8 +138,7 @@ if __name__ == '__main__':
             return set(user_answer) == quest.answer
         return set([user_answer.strip().lower()]) == quest.answer
 
-
-    def handle_answer(id_, quest:str, user_answer:str):
+    def handle_answer(id_, quest: str, user_answer: str):
         """
         Perform verification, save the user response. Start the next question function
         
@@ -161,7 +158,6 @@ if __name__ == '__main__':
 
         send_quest(status[id_].last_user_message)
 
-
     def callback_handle_s(id_, user_ans):
         """
         Process the callback of a button with the user's answer to a question with one answer
@@ -174,8 +170,8 @@ if __name__ == '__main__':
         last_quest = status[id_].last_quest
 
         bot.edit_message_reply_markup(chat_id=last_bot_message.chat.id,
-                                    message_id=last_bot_message.id,
-                                    reply_markup='')
+                                      message_id=last_bot_message.id,
+                                      reply_markup='')
 
         text = last_bot_message.text
         split = text.split('\n')
@@ -183,10 +179,9 @@ if __name__ == '__main__':
         for i in split[:-1]:
             text += i+'\n'
         bot.edit_message_text(chat_id=last_bot_message.chat.id,
-                            message_id=last_bot_message.id,
-                            text=text + _('Ваш ответ: {}'.format(user_ans)))
+                              message_id=last_bot_message.id,
+                              text=text + _('Ваш ответ: {}'.format(user_ans)))
         handle_answer(id_, last_quest, [user_ans])
-
 
     def callback_handle_m(id_, user_ans):
         """
@@ -211,8 +206,8 @@ if __name__ == '__main__':
 
         if user_ans == "@":
             bot.edit_message_reply_markup(chat_id=last_bot_message.chat.id,
-                                        message_id=last_bot_message.id,
-                                        reply_markup='')
+                                          message_id=last_bot_message.id,
+                                          reply_markup='')
             handle_answer(id_, last_quest, ans)
             return
 
@@ -232,17 +227,15 @@ if __name__ == '__main__':
                 new_text += ' | '+i
 
         status[id_].last_bot_message = bot.edit_message_text(chat_id=last_bot_message.chat.id,
-                                                            message_id=last_bot_message.id,
-                                                            text=new_text,
-                                                            reply_markup=last_markup)
-
+                                                             message_id=last_bot_message.id,
+                                                             text=new_text,
+                                                             reply_markup=last_markup)
 
     def handle_o(message):
         """Сheck the user's message for the correctness of the answer to the question"""
         global status
         id_ = message.from_user.id
         handle_answer(id_, status[id_].last_quest, message.text)
-
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback_inline(call):
@@ -256,15 +249,15 @@ if __name__ == '__main__':
             elif last_quest.type_of_q == 'M':
                 callback_handle_m(id_, call.data)
 
-
     @bot.message_handler(content_types=['text'])
     def start(message):
         """Start to host bot, request user's name."""
         global status
         quests = quests_all.copy()
         rd.shuffle(quests)
-        status[message.from_user.id] = UserStatus(name='', res=0, user_ans=dict(), true_ans=dict(), last_bot_message=None,
-                                                last_user_message=None, last_markup=None, quests=quests, last_quest=None)
+        status[message.from_user.id] = UserStatus(name='', res=0, user_ans=dict(), true_ans=dict(),
+                                                  last_bot_message=None, last_user_message=None,
+                                                  last_markup=None, quests=quests, last_quest=None)
 
         if message.text == '/start':
             print(message.from_user.id, _('подключился'))
@@ -276,7 +269,6 @@ if __name__ == '__main__':
             bot.register_next_step_handler(message, get_name)
         else:
             bot.send_message(message.from_user.id, _('Напиши /start'))
-
 
     def get_name(message):
         """User name registration"""
@@ -291,7 +283,6 @@ if __name__ == '__main__':
         bot.send_message(message.from_user.id, MSG)
         bot.register_next_step_handler(message, send_quest)
 
-
     def get_result(message):
         """Completing the test, saving the results"""
         global status
@@ -300,7 +291,6 @@ if __name__ == '__main__':
         if count_flag:
             file_saver(message.from_user.id)
             count_flag -= 1
-
 
     print('>>', _('БОТ НАЧАЛ СВОЮ РАБОТУ'), '<<', sep='')
     bot.polling(none_stop=True, interval=0)
