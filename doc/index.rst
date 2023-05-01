@@ -11,6 +11,7 @@ Welcome to Quizer Telegram Bot's documentation!
    :caption: Contents:
    
    about
+   newbot
    parser
 
 Quizer Telegram Bot - это Telegram-бот для создания и участия в викторинах.
