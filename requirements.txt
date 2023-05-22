@@ -1,0 +1,4 @@
+telebot
+flake8
+pytest
+pipenv-setup
