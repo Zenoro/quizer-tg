@@ -1,0 +1,6 @@
+telebot
+doit
+flake8
+pytest
+sphinx
+babel

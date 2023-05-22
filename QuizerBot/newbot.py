@@ -1,13 +1,12 @@
 import random as rd
-import readline
 import time
 import telebot
 from telebot import types
 import os
 import gettext
 
-from file_parser import parce_file
-from user_status import UserStatus
+from .file_parser import parce_file
+from .user_status import UserStatus
 
 
 translation = gettext.translation('newbot', 'l10n', ['eng'], fallback=True)
@@ -37,9 +36,133 @@ def bot_starter():
     """Start the bot"""
     print(_('Приветствуем администратора! Будьте готовы ввести Телеграм-бот ключ, имя файла вопросов'))
 
+<<<<<<< HEAD:newbot.py
     API_KEY = input(_("Введите ключ API бота, предоставленный Telegram Bot Father    ")).strip()
     filedir = input(_("Введите имя файла теста (файл должен находиться в той же папке, где и программа!)\
                        или его абсолютный путь    "))
+||||||| 4255fbd:newbot.py
+    letters = 'abcdefghijklmnopqrstuvwxyz'
+    
+    msg = qst.title + '\n'
+    for num, i in enumerate(qst.var):
+        msg += letters[num] + ') ' + i + '\n'
+
+    if qst.type_of_q == 'S':
+        msg += "\nНажмите верный ответ"
+    else:
+        msg += "\nВыберите верные ответы"
+    markup = types.InlineKeyboardMarkup()
+    mark = []
+
+    for num, i in enumerate(qst.var):
+        button = types.InlineKeyboardButton(letters[num], callback_data=i)
+        mark.append(button)
+    if qst.type_of_q == 'M':
+        mark.append(types.InlineKeyboardButton('Закончить выбор', callback_data='@'))
+    markup.add(*mark)
+
+    status[id_].last_markup = markup
+    status[id_].last_quest = qst
+    status[id_].last_bot_message = bot.send_message(message.from_user.id, msg, reply_markup=markup)
+    status[id_].last_user_message = message
+
+
+def ask_question_o(message, qst):
+    """Send a question to the user that requires sending a message from the user"""
+    global status
+    id_ = message.from_user.id
+
+    status[id_].last_quest = qst
+    status[id_].last_user_message = message
+
+    msg = qst.title + "\nНапечатайте верный ответ"
+    bot.send_message(message.from_user.id, msg)
+    bot.register_next_step_handler(message, handle_o)
+
+
+def send_quest(message):
+    """Select the next question to send to the user and calling the sending functions"""
+    global status
+    id_ = message.from_user.id
+
+    if not(len(status[id_].quests)):
+        get_result(message)
+        return
+    quest = status[id_].quests[0]
+    del status[id_].quests[0]
+    if quest.type_of_q in ('S', 'M'):
+        return ask_question_sm(message, quest)
+    if quest.type_of_q == 'O':
+        return ask_question_o(message, quest)
+
+
+if __name__ == '__main__':
+    print('Hello! Welcome to tester as teacher. Be ready with Telegram bot API, questions-file')
+
+    API_KEY = input("Enter Bot API key, given by Telegram Bot Father    ").strip()
+    filedir = input("Enter name of quiz-file (it should be in programm path!)    ")
+=======
+    letters = 'abcdefghijklmnopqrstuvwxyz'
+    
+    msg = qst.title + '\n'
+    for num, i in enumerate(qst.var):
+        msg += letters[num] + ') ' + i + '\n'
+
+    if qst.type_of_q == 'S':
+        msg += "\nНажмите верный ответ"
+    else:
+        msg += "\nВыберите верные ответы"
+    markup = types.InlineKeyboardMarkup()
+    mark = []
+
+    for num, i in enumerate(qst.var):
+        button = types.InlineKeyboardButton(letters[num], callback_data=i)
+        mark.append(button)
+    if qst.type_of_q == 'M':
+        mark.append(types.InlineKeyboardButton('Закончить выбор', callback_data='@'))
+    markup.add(*mark)
+
+    status[id_].last_markup = markup
+    status[id_].last_quest = qst
+    status[id_].last_bot_message = bot.send_message(message.from_user.id, msg, reply_markup=markup)
+    status[id_].last_user_message = message
+
+
+def ask_question_o(message, qst):
+    """Send a question to the user that requires sending a message from the user"""
+    global status
+    id_ = message.from_user.id
+
+    status[id_].last_quest = qst
+    status[id_].last_user_message = message
+
+    msg = qst.title + "\nНапечатайте верный ответ"
+    bot.send_message(message.from_user.id, msg)
+    bot.register_next_step_handler(message, handle_o)
+
+
+def send_quest(message):
+    """Select the next question to send to the user and calling the sending functions"""
+    global status
+    id_ = message.from_user.id
+
+    if not(len(status[id_].quests)):
+        get_result(message)
+        return
+    quest = status[id_].quests[0]
+    del status[id_].quests[0]
+    if quest.type_of_q in ('S', 'M'):
+        return ask_question_sm(message, quest)
+    if quest.type_of_q == 'O':
+        return ask_question_o(message, quest)
+
+
+if __name__ == '__main__' or __name__ == 'QuizerBot.newbot':
+    print('Hello! Welcome to tester as teacher. Be ready with Telegram bot API, questions-file')
+
+    API_KEY = input("Enter Bot API key, given by Telegram Bot Father    ").strip()
+    filedir = input("Enter name of quiz-file (it should be in programm path!)    ")
+>>>>>>> develop:QuizerBot/newbot.py
     while 1:
         try:
             filedir = open(filedir, 'r')
@@ -64,7 +187,10 @@ def bot_starter():
     rd.shuffle(quests)
     return bot, quests, quests_all, new_entering_msg, count_flag
 
-
+def main():
+    print('>>BOT STARTED TO WORK<<')
+    bot.polling(none_stop=True, interval=0)
+    
 if __name__ == '__main__':
     status = dict()
     bot, quests, quests_all, new_entering_msg, count_flag = bot_starter()

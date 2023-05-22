@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from telebot.types import Message
-from file_parser import Question
+from .file_parser import Question
 
 
 @dataclass
