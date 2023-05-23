@@ -36,7 +36,7 @@ def standart_status(status_):
 
 
 bot = telebot.TeleBot('6033741551:AAFW7B3eVpEe95aBg81S0cH8t6Cy4XtjocA')
-quests_all = parce_file('MYQUEST.txt')
+quests_all = parce_file('test_data/MYQUEST.txt')
 wrap_bot()
 status = dict()
 standart_status(status)
@@ -57,8 +57,8 @@ class TestBot(unittest.TestCase):
         wrap_bot()
         with open('test_data/quest.txt', 'r') as filedir:
             self.quest = parce_file(filedir)
-        with open('test_data/parser.txt', 'wb') as handle:
-            pickle.dump(self.quest, handle)
+        # with open('test_data/parser.txt', 'wb') as handle:
+        #     pickle.dump(self.quest, handle)
         self.set_quest()
 
     def set_quest(self):
