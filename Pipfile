@@ -5,10 +5,18 @@ name = "pypi"
 
 [packages]
 telebot = "*"
+<<<<<<< HEAD
+||||||| 4255fbd
+readline = "*"
+=======
+doit = "*"
+>>>>>>> main
 
 [dev-packages]
 flake8 = "*"
 pytest = "*"
+sphinx = "*"
+babel = "*"
 
 [requires]
 python_version = "3.10"

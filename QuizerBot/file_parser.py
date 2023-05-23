@@ -51,8 +51,7 @@ def parce_file(fd):
     """
     The function of reading questions and answers from a file
     
-    Keyword Arguments:
-    fd -- opened quiz file
+    :param fd: Opened quiz file
     """
     text = ''
     for line in fd:

@@ -1,4 +1,6 @@
 telebot
+doit
 flake8
 pytest
-pipenv-setup
+sphinx
+babel
