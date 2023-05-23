@@ -195,6 +195,8 @@ def check_answer(quest: str, user_answer: str) -> set:
 def main():
     global status
     global bot
+    global count_flag
+    global quests_all
     status = dict()
     bot, quests, quests_all, new_entering_msg, count_flag = bot_starter()
 
