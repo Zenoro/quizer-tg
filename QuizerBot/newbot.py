@@ -1,4 +1,5 @@
 import random as rd
+import readline
 import time
 import telebot
 from telebot import types
@@ -21,7 +22,7 @@ def file_saver(id_):
     """
     global quests_all
     global status
-    with open(f"answers_{status[id_].name}.txt", "w", encoding="utf-8") as f:
+    with open(f"local_answers/answers_{status[id_].name}.txt", "w", encoding="utf-8") as f:
         res = status[id_].res
         print(status[id_].name, file=f)
         print(time.ctime(), file=f)
@@ -30,139 +31,24 @@ def file_saver(id_):
             print(_("Вопрос {}".format(num+1)), file=f)
             print(_("Ответ пользователя: {}".format(status[id_].user_ans[quest.title])), file=f)
             print(_("Правильный ответ: {}".format(status[id_].true_ans[quest.title])), file=f)
+            
+def get_result(message):
+    """Completing the test, saving the results"""
+    global status
+    global count_flag
+    bot.send_message(message.from_user.id, _('Ваш результат: {}'.format(status[message.from_user.id].res)))
+    if count_flag:
+        file_saver(message.from_user.id)
+        count_flag -= 1
 
 
 def bot_starter():
     """Start the bot"""
     print(_('Приветствуем администратора! Будьте готовы ввести Телеграм-бот ключ, имя файла вопросов'))
 
-<<<<<<< HEAD:newbot.py
     API_KEY = input(_("Введите ключ API бота, предоставленный Telegram Bot Father    ")).strip()
     filedir = input(_("Введите имя файла теста (файл должен находиться в той же папке, где и программа!)\
                        или его абсолютный путь    "))
-||||||| 4255fbd:newbot.py
-    letters = 'abcdefghijklmnopqrstuvwxyz'
-    
-    msg = qst.title + '\n'
-    for num, i in enumerate(qst.var):
-        msg += letters[num] + ') ' + i + '\n'
-
-    if qst.type_of_q == 'S':
-        msg += "\nНажмите верный ответ"
-    else:
-        msg += "\nВыберите верные ответы"
-    markup = types.InlineKeyboardMarkup()
-    mark = []
-
-    for num, i in enumerate(qst.var):
-        button = types.InlineKeyboardButton(letters[num], callback_data=i)
-        mark.append(button)
-    if qst.type_of_q == 'M':
-        mark.append(types.InlineKeyboardButton('Закончить выбор', callback_data='@'))
-    markup.add(*mark)
-
-    status[id_].last_markup = markup
-    status[id_].last_quest = qst
-    status[id_].last_bot_message = bot.send_message(message.from_user.id, msg, reply_markup=markup)
-    status[id_].last_user_message = message
-
-
-def ask_question_o(message, qst):
-    """Send a question to the user that requires sending a message from the user"""
-    global status
-    id_ = message.from_user.id
-
-    status[id_].last_quest = qst
-    status[id_].last_user_message = message
-
-    msg = qst.title + "\nНапечатайте верный ответ"
-    bot.send_message(message.from_user.id, msg)
-    bot.register_next_step_handler(message, handle_o)
-
-
-def send_quest(message):
-    """Select the next question to send to the user and calling the sending functions"""
-    global status
-    id_ = message.from_user.id
-
-    if not(len(status[id_].quests)):
-        get_result(message)
-        return
-    quest = status[id_].quests[0]
-    del status[id_].quests[0]
-    if quest.type_of_q in ('S', 'M'):
-        return ask_question_sm(message, quest)
-    if quest.type_of_q == 'O':
-        return ask_question_o(message, quest)
-
-
-if __name__ == '__main__':
-    print('Hello! Welcome to tester as teacher. Be ready with Telegram bot API, questions-file')
-
-    API_KEY = input("Enter Bot API key, given by Telegram Bot Father    ").strip()
-    filedir = input("Enter name of quiz-file (it should be in programm path!)    ")
-=======
-    letters = 'abcdefghijklmnopqrstuvwxyz'
-    
-    msg = qst.title + '\n'
-    for num, i in enumerate(qst.var):
-        msg += letters[num] + ') ' + i + '\n'
-
-    if qst.type_of_q == 'S':
-        msg += "\nНажмите верный ответ"
-    else:
-        msg += "\nВыберите верные ответы"
-    markup = types.InlineKeyboardMarkup()
-    mark = []
-
-    for num, i in enumerate(qst.var):
-        button = types.InlineKeyboardButton(letters[num], callback_data=i)
-        mark.append(button)
-    if qst.type_of_q == 'M':
-        mark.append(types.InlineKeyboardButton('Закончить выбор', callback_data='@'))
-    markup.add(*mark)
-
-    status[id_].last_markup = markup
-    status[id_].last_quest = qst
-    status[id_].last_bot_message = bot.send_message(message.from_user.id, msg, reply_markup=markup)
-    status[id_].last_user_message = message
-
-
-def ask_question_o(message, qst):
-    """Send a question to the user that requires sending a message from the user"""
-    global status
-    id_ = message.from_user.id
-
-    status[id_].last_quest = qst
-    status[id_].last_user_message = message
-
-    msg = qst.title + "\nНапечатайте верный ответ"
-    bot.send_message(message.from_user.id, msg)
-    bot.register_next_step_handler(message, handle_o)
-
-
-def send_quest(message):
-    """Select the next question to send to the user and calling the sending functions"""
-    global status
-    id_ = message.from_user.id
-
-    if not(len(status[id_].quests)):
-        get_result(message)
-        return
-    quest = status[id_].quests[0]
-    del status[id_].quests[0]
-    if quest.type_of_q in ('S', 'M'):
-        return ask_question_sm(message, quest)
-    if quest.type_of_q == 'O':
-        return ask_question_o(message, quest)
-
-
-if __name__ == '__main__' or __name__ == 'QuizerBot.newbot':
-    print('Hello! Welcome to tester as teacher. Be ready with Telegram bot API, questions-file')
-
-    API_KEY = input("Enter Bot API key, given by Telegram Bot Father    ").strip()
-    filedir = input("Enter name of quiz-file (it should be in programm path!)    ")
->>>>>>> develop:QuizerBot/newbot.py
     while 1:
         try:
             filedir = open(filedir, 'r')
@@ -170,8 +56,9 @@ if __name__ == '__main__' or __name__ == 'QuizerBot.newbot':
         except FileNotFoundError:
             filedir = input(_("Неправильный путь или имя файла. Пробуйте снова.    "))
     save_flag = input(_("Нужно ли сохранять результаты участников локально? [n]    "))
-    os.makedirs('local_answers')
-    os.chdir('local_answers')
+    if not os.path.exists('local_answers'):
+        os.makedirs('local_answers') 
+    #os.chdir('local_answers')
     if save_flag and save_flag.strip().lower() not in 'n no нет н т'.split():
         try:
             count_flag = int(input(_('Введите максимальное количество участников для сохранения [5]    ')))
@@ -187,102 +74,123 @@ if __name__ == '__main__' or __name__ == 'QuizerBot.newbot':
     rd.shuffle(quests)
     return bot, quests, quests_all, new_entering_msg, count_flag
 
-def main():
-    print('>>BOT STARTED TO WORK<<')
-    bot.polling(none_stop=True, interval=0)
+def ask_question_sm(message, qst, _status=None, _bot=None):
+    """Send a question to the user, indicating the buttons for the answer under the message"""
+    global bot
+    if _status is None: # Костыль
+        global status
+    else:
+        status=_status
+    if _bot is not None: # Костыль
+        bot = _bot
     
-if __name__ == '__main__':
+    id_ = message.from_user.id
+    
+    letters = 'abcdefghijklmnopqrstuvwxyz'
+    
+    msg = qst.title + '\n'
+    for num, i in enumerate(qst.var):
+        msg += letters[num] + ') ' + i + '\n'
+
+    if qst.type_of_q == 'S':
+        msg += "\n" + _("Нажмите верный ответ")
+    else:
+        msg += "\n" + _("Выберите верные ответы")
+    markup = types.InlineKeyboardMarkup()
+    mark = []
+
+    for num, i in enumerate(qst.var):
+        button = types.InlineKeyboardButton(letters[num], callback_data=i)
+        mark.append(button)
+    if qst.type_of_q == 'M':
+        mark.append(types.InlineKeyboardButton(_('Закончить выбор'), callback_data='@'))
+    markup.add(*mark)
+
+    status[id_].last_markup = markup
+    status[id_].last_quest = qst
+    status[id_].last_bot_message = bot.send_message(message.from_user.id, msg, reply_markup=markup)
+    status[id_].last_user_message = message
+
+def ask_question_o(message, qst, _status=None, _bot=None):
+    """Send a question to the user that requires sending a message from the user"""
+    global bot
+    if _status is None: # Костыль
+        global status
+    else:
+        status=_status
+    
+    if _bot is not None: # Костыль
+        bot = _bot
+    id_ = message.from_user.id
+
+    status[id_].last_quest = qst
+    status[id_].last_user_message = message
+
+    msg = qst.title + "\n"+_("Напечатайте верный ответ")
+    bot.send_message(message.from_user.id, msg)
+    if _status is None: # Костыль
+        bot.register_next_step_handler(message, handle_o)
+        
+def send_quest(message):
+    """Select the next question to send to the user and calling the sending functions"""
+    global status
+    id_ = message.from_user.id
+
+    if not len(status[id_].quests):
+        get_result(message)
+        return
+    quest = status[id_].quests[0]
+    del status[id_].quests[0]
+    if quest.type_of_q in ('S', 'M'):
+        return ask_question_sm(message, quest)
+    if quest.type_of_q == 'O':
+        return ask_question_o(message, quest)
+        
+def handle_answer(id_, quest: str, user_answer: str):
+    """
+    Perform verification, save the user response. Start the next question function
+    
+    :param id_: The user's key to the dictionary status
+    :param quest: Question string
+    :param user_answer: Question's answer via user
+    """
+    global status
+    # print(check_answer(quest,user_answer))
+    status[id_].res += check_answer(quest, user_answer)
+
+    if status[id_].last_quest.type_of_q in {'S', 'M'}:
+        status[id_].user_ans[quest.title] = set(user_answer)
+    else:
+        status[id_].user_ans[quest.title] = set([user_answer.strip().lower()])
+    status[id_].true_ans[quest.title] = status[id_].last_quest.answer
+
+    send_quest(status[id_].last_user_message)
+        
+def handle_o(message):
+    """Сheck the user's message for the correctness of the answer to the question"""
+    global status
+    id_ = message.from_user.id
+    handle_answer(id_, status[id_].last_quest, message.text)
+        
+def check_answer(quest: str, user_answer: str) -> set:
+    """
+    Check the correctness of the answer (depending on the question).
+    
+    :param quest: Question string
+    :param user_answer: Question's answer via user
+    """
+    if quest.type_of_q in {'S', 'M'}:
+        # print(set(user_answer), quest.answer)
+        return set(user_answer) == quest.answer
+    return set([user_answer.strip().lower()]) == quest.answer
+
+
+def main():
+    global status
+    global bot
     status = dict()
     bot, quests, quests_all, new_entering_msg, count_flag = bot_starter()
 
-    def ask_question_sm(message, qst):
-        """Send a question to the user, indicating the buttons for the answer under the message"""
-        global status
-        id_ = message.from_user.id
-
-        letters = 'abcdefghijklmnopqrstuvwxyz'
-        
-        msg = qst.title + '\n'
-        for num, i in enumerate(qst.var):
-            msg += letters[num] + ') ' + i + '\n'
-
-        if qst.type_of_q == 'S':
-            msg += "\n" + _("Нажмите верный ответ")
-        else:
-            msg += "\n" + _("Выберите верные ответы")
-        markup = types.InlineKeyboardMarkup()
-        mark = []
-
-        for num, i in enumerate(qst.var):
-            button = types.InlineKeyboardButton(letters[num], callback_data=i)
-            mark.append(button)
-        if qst.type_of_q == 'M':
-            mark.append(types.InlineKeyboardButton(_('Закончить выбор'), callback_data='@'))
-        markup.add(*mark)
-
-        status[id_].last_markup = markup
-        status[id_].last_quest = qst
-        status[id_].last_bot_message = bot.send_message(message.from_user.id, msg, reply_markup=markup)
-        status[id_].last_user_message = message
-
-    def ask_question_o(message, qst):
-        """Send a question to the user that requires sending a message from the user"""
-        global status
-        id_ = message.from_user.id
-
-        status[id_].last_quest = qst
-        status[id_].last_user_message = message
-
-        msg = qst.title + "\n"+_("Напечатайте верный ответ")
-        bot.send_message(message.from_user.id, msg)
-        bot.register_next_step_handler(message, handle_o)
-
-    def send_quest(message):
-        """Select the next question to send to the user and calling the sending functions"""
-        global status
-        id_ = message.from_user.id
-
-        if not len(status[id_].quests):
-            get_result(message)
-            return
-        quest = status[id_].quests[0]
-        del status[id_].quests[0]
-        if quest.type_of_q in ('S', 'M'):
-            return ask_question_sm(message, quest)
-        if quest.type_of_q == 'O':
-            return ask_question_o(message, quest)
-
-    def check_answer(quest: str, user_answer: str) -> set:
-        """
-        Check the correctness of the answer (depending on the question).
-        
-        :param quest: Question string
-        :param user_answer: Question's answer via user
-        """
-        if quest.type_of_q in {'S', 'M'}:
-            # print(set(user_answer), quest.answer)
-            return set(user_answer) == quest.answer
-        return set([user_answer.strip().lower()]) == quest.answer
-
-    def handle_answer(id_, quest: str, user_answer: str):
-        """
-        Perform verification, save the user response. Start the next question function
-        
-        :param id_: The user's key to the dictionary status
-        :param quest: Question string
-        :param user_answer: Question's answer via user
-        """
-        global status
-        # print(check_answer(quest,user_answer))
-        status[id_].res += check_answer(quest, user_answer)
-
-        if status[id_].last_quest.type_of_q in {'S', 'M'}:
-            status[id_].user_ans[quest.title] = set(user_answer)
-        else:
-            status[id_].user_ans[quest.title] = set([user_answer.strip().lower()])
-        status[id_].true_ans[quest.title] = status[id_].last_quest.answer
-
-        send_quest(status[id_].last_user_message)
 
     def callback_handle_s(id_, user_ans):
         """
@@ -357,11 +265,6 @@ if __name__ == '__main__':
                                                              text=new_text,
                                                              reply_markup=last_markup)
 
-    def handle_o(message):
-        """Сheck the user's message for the correctness of the answer to the question"""
-        global status
-        id_ = message.from_user.id
-        handle_answer(id_, status[id_].last_quest, message.text)
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback_inline(call):
@@ -409,14 +312,11 @@ if __name__ == '__main__':
         bot.send_message(message.from_user.id, MSG)
         bot.register_next_step_handler(message, send_quest)
 
-    def get_result(message):
-        """Completing the test, saving the results"""
-        global status
-        global count_flag
-        bot.send_message(message.from_user.id, _('Ваш результат: {}'.format(status[message.from_user.id].res)))
-        if count_flag:
-            file_saver(message.from_user.id)
-            count_flag -= 1
 
     print('>>', _('БОТ НАЧАЛ СВОЮ РАБОТУ'), '<<', sep='')
     bot.polling(none_stop=True, interval=0)
+    
+
+if __name__ == '__main__':
+    main()
+    
