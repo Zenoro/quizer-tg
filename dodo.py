@@ -19,6 +19,13 @@ def task_docs():
     }
 
 
+def task_tests():
+    """Input data testing"""
+    return {
+        'actions': ['python3 test.py -v']
+    }
+
+
 def task_flake():
     """Check files style according to flake8"""
     return {
