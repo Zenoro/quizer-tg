@@ -5,12 +5,15 @@ import telebot
 from telebot import types
 import os
 import gettext
+# import locale
+
 
 from .file_parser import parce_file
 from .user_status import UserStatus
 
 
-translation = gettext.translation('newbot', 'l10n', ['eng'], fallback=True)
+# locale.setlocale(locale.LC_ALL, locale.getdefaultlocale())
+translation = gettext.translation('newbot', f"{os.path.dirname(__file__)}/l10n", ['eng'], fallback=True)
 _ = translation.gettext
 
 
@@ -48,8 +51,8 @@ def bot_starter():
     print(_('Приветствуем администратора! Будьте готовы ввести Телеграм-бот ключ, имя файла вопросов'))
 
     API_KEY = input(_("Введите ключ API бота, предоставленный Telegram Bot Father    ")).strip()
-    filedir = input(_("Введите имя файла теста (файл должен находиться в той же папке, где и программа!)\
-                       или его абсолютный путь    "))
+    filedir = input(_("Введите имя файла теста (файл должен находиться в той же папке, где и программа!)" +
+                      " или его абсолютный путь    "))
     while 1:
         try:
             filedir = open(filedir, 'r')
@@ -309,7 +312,7 @@ def main():
     def get_name(message):
         """User name registration"""
         global status
-        print(message.from_user.id, 'connected as', message.text)
+        print(message.from_user.id, _('подключился как'), message.text)
         status[message.from_user.id].name = message.text
         MSG = _("Всего в тесте будет {} вопросов трёх типов:".format(len(quests))) + "\n\t"\
             + _("с множественным выбором,") + "\n\t"\
