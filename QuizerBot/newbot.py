@@ -20,7 +20,7 @@ _ = translation.gettext
 def file_saver(id_):
     """
     Save the user's results locally in a file.
-    
+
     :param id_: The user's key to the dictionary status
     """
     global quests_all
@@ -88,11 +88,11 @@ def ask_question_sm(message, qst, _status=None, _bot=None):
         status = _status
     if _bot is not None:  # Костыль
         bot = _bot
-    
+
     id_ = message.from_user.id
-    
+
     letters = 'abcdefghijklmnopqrstuvwxyz'
-    
+
     msg = qst.title + '\n'
     for num, i in enumerate(qst.var):
         msg += letters[num] + ') ' + i + '\n'
@@ -124,7 +124,7 @@ def ask_question_o(message, qst, _status=None, _bot=None):
         global status
     else:
         status = _status
-    
+
     if _bot is not None:  # Костыль
         bot = _bot
     id_ = message.from_user.id
@@ -137,7 +137,7 @@ def ask_question_o(message, qst, _status=None, _bot=None):
     if _status is None:  # Костыль
         bot.register_next_step_handler(message, handle_o)
 
-        
+
 def send_quest(message):
     """Select the next question to send to the user and calling the sending functions."""
     global status
@@ -153,11 +153,11 @@ def send_quest(message):
     if quest.type_of_q == 'O':
         return ask_question_o(message, quest)
 
-        
+
 def handle_answer(id_, quest: str, user_answer: str):
     """
     Perform verification, save the user response. Start the next question function.
-    
+
     :param id_: The user's key to the dictionary status
     :param quest: Question string
     :param user_answer: Question's answer via user
@@ -174,18 +174,18 @@ def handle_answer(id_, quest: str, user_answer: str):
 
     send_quest(status[id_].last_user_message)
 
-        
+
 def handle_o(message):
     """Сheck the user's message for the correctness of the answer to the question."""
     global status
     id_ = message.from_user.id
     handle_answer(id_, status[id_].last_quest, message.text)
 
-        
+
 def check_answer(quest: str, user_answer: str) -> set:
     """
     Check the correctness of the answer (depending on the question).
-    
+
     :param quest: Question string
     :param user_answer: Question's answer via user
     """
@@ -207,7 +207,7 @@ def main():
     def callback_handle_s(id_, user_ans):
         """
         Process the callback of a button with the user's answer to a question with one answer.
-        
+
         :param id_: The user's key to the dictionary status
         :param user_ans: Users's answer on the last question
         """
@@ -232,7 +232,7 @@ def main():
     def callback_handle_m(id_, user_ans):
         """
         Process the callback of a button with the user's answer to a question with several answers.
-        
+
         :param id_: The user's key to the dictionary status
         :param user_ans:  Users's answer on the last question
         """
@@ -325,7 +325,7 @@ def main():
 
     print('>>', _('БОТ НАЧАЛ СВОЮ РАБОТУ'), '<<', sep='')
     bot.polling(none_stop=True, interval=0)
-    
+
 
 if __name__ == '__main__':
     main()

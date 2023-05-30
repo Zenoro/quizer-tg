@@ -5,7 +5,7 @@ from dataclasses import dataclass
 @dataclass
 class Question:
     """Collect processed information about the question."""
-    
+
     type_of_q: str
     title: str
     var: list | None
@@ -52,7 +52,7 @@ def handle_o_question(text):
 def parce_file(fd):
     """
     Read questions and answers from a file.
-    
+
     :param fd: Opened quiz file
     """
     text = ''
