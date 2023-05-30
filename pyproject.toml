@@ -1,6 +1,32 @@
-[build-system]
-requires = [
- "setuptools>=42",
- "wheel"
+[project]
+name = "QuizerBot"
+version = "0.1.0"
+description = "Online quiz bot via Telegram API"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+ {name = "Voronets Vladimir "},
+ {name = "Tearo Kirill"}
 ]
+
+keywords = ["bot", "telegram", "quiz"]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = "requirements.txt" }
+
+[project.urls]
+repository = "https://github.com/Zenoro/quizer-tg/"
+
+[project.scripts]
+QuizerBot = "QuizerBot.newbot:main"
+
+[build-system]
+requires = ["sphinx", "build", "pytest", "doit", "flake8", "pydocstyle", "babel", "setuptools"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-dir]
+QuizerBot = "QuizerBot"
+
+[tool.setuptools.package-data] 
+QuizerBot = ["l10n/eng/*/*.mo"]
