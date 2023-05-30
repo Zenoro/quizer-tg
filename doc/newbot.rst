@@ -1,6 +1,6 @@
 Bot API
 ========
 
-.. automodule:: newbot
+.. automodule:: QuizerBot.newbot
     :members:
     :undoc-members:

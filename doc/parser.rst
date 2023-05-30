@@ -1,7 +1,7 @@
 File Parser API
 ================
 
-.. automodule:: file_parser
+.. automodule:: QuizerBot.file_parser
     :members:
     :undoc-members:
 
