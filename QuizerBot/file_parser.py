@@ -4,6 +4,8 @@ from dataclasses import dataclass
 
 @dataclass
 class Question:
+    """Collect processed information about the question."""
+    
     type_of_q: str
     title: str
     var: list | None
@@ -11,7 +13,7 @@ class Question:
 
 
 def handle_s_question(text):
-    """Reading a question with one answer"""
+    """Read a question with one answer."""
     title = text[0][3:]
     var = []
     temp = {}
@@ -26,7 +28,7 @@ def handle_s_question(text):
 
 
 def handle_m_question(text):
-    """Reading a question with multiple answers"""
+    """Read a question with multiple answers."""
     title = text[0][3:]
     var = []
     temp = {}
@@ -41,7 +43,7 @@ def handle_m_question(text):
 
 
 def handle_o_question(text):
-    """Reading a question with an answer for input"""
+    """Read a question with an answer for input."""
     title = text[0][3:]
     answer = text[1][3:].strip().lower()
     return Question('O', title, None, set([answer]))
@@ -49,7 +51,7 @@ def handle_o_question(text):
 
 def parce_file(fd):
     """
-    The function of reading questions and answers from a file
+    Read questions and answers from a file.
     
     :param fd: Opened quiz file
     """

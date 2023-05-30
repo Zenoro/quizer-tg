@@ -37,7 +37,7 @@ def file_saver(id_):
 
 
 def get_result(message):
-    """Completing the test, saving the results"""
+    """Completing the test, saving the results."""
     global status
     global count_flag
     bot.send_message(message.from_user.id, _('Ваш результат: {}'.format(status[message.from_user.id].res)))
@@ -47,7 +47,7 @@ def get_result(message):
 
 
 def bot_starter():
-    """Start the bot"""
+    """Start the bot."""
     print(_('Приветствуем администратора! Будьте готовы ввести Телеграм-бот ключ, имя файла вопросов'))
 
     API_KEY = input(_("Введите ключ API бота, предоставленный Telegram Bot Father    ")).strip()
@@ -80,7 +80,7 @@ def bot_starter():
 
 
 def ask_question_sm(message, qst, _status=None, _bot=None):
-    """Send a question to the user, indicating the buttons for the answer under the message"""
+    """Send a question to the user, indicating the buttons for the answer under the message."""
     global bot
     if _status is None:  # Костыль
         global status
@@ -118,7 +118,7 @@ def ask_question_sm(message, qst, _status=None, _bot=None):
 
 
 def ask_question_o(message, qst, _status=None, _bot=None):
-    """Send a question to the user that requires sending a message from the user"""
+    """Send a question to the user that requires sending a message from the user."""
     global bot
     if _status is None:  # Костыль
         global status
@@ -139,7 +139,7 @@ def ask_question_o(message, qst, _status=None, _bot=None):
 
         
 def send_quest(message):
-    """Select the next question to send to the user and calling the sending functions"""
+    """Select the next question to send to the user and calling the sending functions."""
     global status
     id_ = message.from_user.id
 
@@ -156,7 +156,7 @@ def send_quest(message):
         
 def handle_answer(id_, quest: str, user_answer: str):
     """
-    Perform verification, save the user response. Start the next question function
+    Perform verification, save the user response. Start the next question function.
     
     :param id_: The user's key to the dictionary status
     :param quest: Question string
@@ -176,7 +176,7 @@ def handle_answer(id_, quest: str, user_answer: str):
 
         
 def handle_o(message):
-    """Сheck the user's message for the correctness of the answer to the question"""
+    """Сheck the user's message for the correctness of the answer to the question."""
     global status
     id_ = message.from_user.id
     handle_answer(id_, status[id_].last_quest, message.text)
@@ -196,6 +196,7 @@ def check_answer(quest: str, user_answer: str) -> set:
 
 
 def main():
+    """Start function for programm importing."""
     global status
     global bot
     global count_flag
@@ -205,7 +206,7 @@ def main():
 
     def callback_handle_s(id_, user_ans):
         """
-        Process the callback of a button with the user's answer to a question with one answer
+        Process the callback of a button with the user's answer to a question with one answer.
         
         :param id_: The user's key to the dictionary status
         :param user_ans: Users's answer on the last question
@@ -230,7 +231,7 @@ def main():
 
     def callback_handle_m(id_, user_ans):
         """
-        Process the callback of a button with the user's answer to a question with several answers
+        Process the callback of a button with the user's answer to a question with several answers.
         
         :param id_: The user's key to the dictionary status
         :param user_ans:  Users's answer on the last question
@@ -278,7 +279,7 @@ def main():
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback_inline(call):
-        """The callback function for the user to acquire buttons under the questions"""
+        """Callbacking function for the user to acquire buttons under the questions."""
         if call.data:
             global status
             last_quest = status[call.from_user.id].last_quest
@@ -310,7 +311,7 @@ def main():
             bot.send_message(message.from_user.id, _('Напиши /start'))
 
     def get_name(message):
-        """User name registration"""
+        """User name registration."""
         global status
         print(message.from_user.id, _('подключился как'), message.text)
         status[message.from_user.id].name = message.text

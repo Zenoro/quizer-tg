@@ -5,6 +5,8 @@ from .file_parser import Question
 
 @dataclass
 class UserStatus:
+    """Collect processed information about the users' answers."""
+
     name: str
     res: int
 
