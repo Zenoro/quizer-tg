@@ -62,10 +62,3 @@ def task_rus():
         'actions': [CmdAction(create_cmd_string(x))],
         'verbosity': 2,
         }
-
-
-def task_wheel():
-    """Create a wheel"""
-    return {
-        'actions': ['python3 -m build -w -n']
-    }
