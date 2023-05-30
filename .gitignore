@@ -1,9 +1,7 @@
-**/__pycache__
-_build/
+__pycache__
 **/*.mo
 *.db
-__pycache__
 .history
 dist
-build
 *.egg-info
+build**
